@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>需求排期工具</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f8; color: #333; min-height: 100vh; }
+
+  header {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  header h1 { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; }
+  header .subtitle { font-size: 12px; opacity: 0.8; }
+
+  .app-body {
+    display: flex;
+    height: calc(100vh - 54px);
+    overflow: hidden;
+  }
+
+  /* ====== SIDEBAR ====== */
+  .sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: #fff;
+    border-right: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .config-panel {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    background: #fafafa;
+  }
+  .config-panel h3 {
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+  }
+  .config-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 0;
+  }
+  .config-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .config-item label {
+    font-size: 11px;
+    color: #666;
+    font-weight: 500;
+  }
+  .config-item input {
+    padding: 5px 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 12px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .config-item input:focus { border-color: #667eea; }
+
+  .req-list-header {
+    padding: 10px 12px 6px;
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    border-bottom: 1px solid #eee;
+    background: #fafafa;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .req-count { background: #667eea; color: #fff; border-radius: 10px; padding: 1px 6px; font-size: 10px; }
+
+  .req-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px 8px;
+  }
+  .req-list::-webkit-scrollbar { width: 4px; }
+  .req-list::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+
+  .req-item {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    cursor: grab;
+    user-select: none;
+    transition: box-shadow 0.15s, transform 0.15s;
+    position: relative;
+  }
+  .req-item:active { cursor: grabbing; }
+  .req-item.dragging { opacity: 0.4; }
+  .req-item.drag-over { border-color: #667eea; background: #f0f3ff; }
+  .req-item.scheduled {
+    border-left: 3px solid #22c55e;
+  }
+  .req-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+  .req-item-top {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 5px;
+  }
+  .drag-handle {
+    color: #ccc;
+    font-size: 14px;
+    cursor: grab;
+    flex-shrink: 0;
+  }
+  .req-name {
+    flex: 1;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.3;
+    cursor: text;
+    min-width: 0;
+    word-break: break-all;
+  }
+  .req-name-input {
+    flex: 1;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid #667eea;
+    border-radius: 4px;
+    padding: 2px 4px;
+    outline: none;
+    min-width: 0;
+  }
+  .req-delete {
+    background: none;
+    border: none;
+    color: #ccc;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 2px;
+    flex-shrink: 0;
+    line-height: 1;
+    transition: color 0.2s;
+  }
+  .req-delete:hover { color: #ef4444; }
+
+  .req-item-bottom {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .pri-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .pri-P0 { background: #fee2e2; color: #dc2626; }
+  .pri-P1 { background: #ffedd5; color: #ea580c; }
+  .pri-P2 { background: #dcfce7; color: #16a34a; }
+  .pri-P3 { background: #f3f4f6; color: #6b7280; }
+  .pri-BIG { background: #ede9fe; color: #7c3aed; }
+
+  .pri-select {
+    font-size: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 1px 3px;
+    background: #fff;
+    cursor: pointer;
+    outline: none;
+  }
+  .pd-input {
+    width: 44px;
+    font-size: 11px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 2px 4px;
+    text-align: center;
+    outline: none;
+  }
+  .pd-input:focus { border-color: #667eea; }
+  .pd-label { font-size: 10px; color: #999; }
+
+  .scheduled-date {
+    font-size: 10px;
+    color: #22c55e;
+    margin-top: 3px;
+    font-weight: 500;
+  }
+
+  .add-req-btn {
+    margin: 8px;
+    padding: 8px;
+    background: none;
+    border: 1.5px dashed #667eea;
+    border-radius: 8px;
+    color: #667eea;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    width: calc(100% - 16px);
+    transition: background 0.2s;
+  }
+  .add-req-btn:hover { background: #f0f3ff; }
+
+  /* ====== MAIN AREA ====== */
+  .main-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  .stats-bar {
+    background: #fff;
+    border-bottom: 1px solid #e8e8e8;
+    padding: 10px 16px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 80px;
+  }
+  .stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: #667eea;
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 10px;
+    color: #999;
+    margin-top: 2px;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .stat-divider {
+    width: 1px;
+    height: 32px;
+    background: #eee;
+  }
+
+  .action-bar {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .action-btn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    white-space: nowrap;
+  }
+  .action-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+  .action-btn:active { transform: translateY(0); }
+  .btn-auto { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
+  .btn-export { background: #f0f3ff; color: #667eea; border: 1px solid #c7d2fe; }
+  .btn-clear { background: #fff5f5; color: #ef4444; border: 1px solid #fecaca; }
+
+  .calendar-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 16px;
+  }
+  .calendar-wrapper::-webkit-scrollbar { width: 6px; }
+  .calendar-wrapper::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+
+  .calendar-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .cal-nav-btn {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 5px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+  }
+  .cal-nav-btn:hover { background: #f0f3ff; }
+  .cal-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #333;
+  }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+  }
+  .cal-header-cell {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #888;
+    padding: 4px 0;
+  }
+  .cal-cell {
+    background: #fff;
+    border-radius: 8px;
+    border: 1.5px solid transparent;
+    min-height: 88px;
+    padding: 4px;
+    position: relative;
+    transition: border-color 0.15s, background 0.15s;
+    vertical-align: top;
+  }
+  .cal-cell.empty {
+    background: transparent;
+    border: none;
+  }
+  .cal-cell.holiday { background: #fff5f5; }
+  .cal-cell.workday-holiday { background: #f0fdf4; }
+  .cal-cell.weekend { background: #fafafa; }
+  .cal-cell.past { opacity: 0.6; }
+  .cal-cell.today { border-color: #667eea !important; }
+  .cal-cell.drag-over-valid { border-color: #667eea; background: #f0f3ff; }
+  .cal-cell.drag-over-invalid { border-color: #ef4444; background: #fff5f5; border-style: dashed; }
+
+  .cal-date-num {
+    font-size: 12px;
+    font-weight: 600;
+    color: #555;
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+  .cal-cell.today .cal-date-num { color: #667eea; }
+
+  .cal-holiday-tag {
+    position: absolute;
+    top: 3px;
+    right: 4px;
+    font-size: 9px;
+    color: #ef4444;
+    font-weight: 600;
+    line-height: 1;
+  }
+  .cal-workday-tag {
+    position: absolute;
+    top: 3px;
+    right: 4px;
+    font-size: 9px;
+    color: #16a34a;
+    font-weight: 700;
+    background: #dcfce7;
+    border-radius: 3px;
+    padding: 0 3px;
+  }
+
+  .cal-req-block {
+    position: relative;
+    border-radius: 4px;
+    padding: 2px 5px;
+    margin-top: 2px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #fff;
+    cursor: default;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.4;
+    padding-right: 14px;
+  }
+  .cal-req-block .remove-btn {
+    position: absolute;
+    right: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.3);
+    border: none;
+    color: #fff;
+    border-radius: 3px;
+    width: 14px;
+    height: 14px;
+    font-size: 9px;
+    line-height: 14px;
+    text-align: center;
+    cursor: pointer;
+    display: none;
+    padding: 0;
+  }
+  .cal-req-block:hover .remove-btn { display: block; }
+  .block-P0 { background: #ef4444; }
+  .block-P1 { background: #f97316; }
+  .block-P2 { background: #22c55e; }
+  .block-P3 { background: #9ca3af; }
+  .block-BIG { background: #8b5cf6; }
+
+  /* ====== MODAL ====== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-box {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 560px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #333;
+  }
+  .modal-content {
+    font-size: 13px;
+    line-height: 1.8;
+    color: #555;
+    white-space: pre-wrap;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px;
+    max-height: 50vh;
+    overflow-y: auto;
+  }
+  .modal-close {
+    margin-top: 16px;
+    padding: 8px 20px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  @media (max-width: 700px) {
+    .app-body { flex-direction: column; height: auto; overflow: auto; }
+    .sidebar { width: 100%; min-width: unset; height: auto; border-right: none; border-bottom: 1px solid #e0e0e0; }
+    .main-area { height: auto; }
+    .action-bar { margin-left: 0; }
+    .stats-bar { flex-wrap: wrap; gap: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="h1" style="font-size:18px;font-weight:700;color:#fff;">📅 需求排期工具</div>
+    <div class="subtitle" style="font-size:12px;opacity:0.8;color:#fff;">拖拽需求到日历格子即可排期</div>
+  </div>
+</header>
+
+<div class="app-body">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="config-panel">
+      <h3>项目配置</h3>
+      <div class="config-row">
+        <div class="config-item">
+          <label>开工日期</label>
+          <input type="date" id="startDate" value="2026-05-06">
+        </div>
+        <div class="config-item">
+          <label>大需求 DDL</label>
+          <input type="date" id="bigDdl" value="2026-06-15">
+        </div>
+        <div class="config-item">
+          <label>开发者</label>
+          <input type="text" id="devName" value="晴姐" placeholder="开发者名称">
+        </div>
+      </div>
+    </div>
+
+    <div class="req-list-header">
+      <span>需求列表</span>
+      <span class="req-count" id="reqCount">0</span>
+    </div>
+
+    <div class="req-list" id="reqList"></div>
+
+    <button class="add-req-btn" onclick="addRequirement()">+ 新增需求</button>
+  </div>
+
+  <!-- MAIN AREA -->
+  <div class="main-area">
+    <div class="stats-bar">
+      <div class="stat-item">
+        <div class="stat-value" id="statWorkdays">-</div>
+        <div class="stat-label">可用工作日</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <div class="stat-value" id="statScheduledPd">-</div>
+        <div class="stat-label">已排小需求PD</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <div class="stat-value" id="statBuffer">-</div>
+        <div class="stat-label">剩余缓冲天</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <div class="stat-value" id="statReqProgress">-</div>
+        <div class="stat-label">已排/总需求</div>
+      </div>
+      <div class="action-bar">
+        <button class="action-btn btn-auto" onclick="autoSchedule()">⚡ 自动排期</button>
+        <button class="action-btn btn-export" onclick="exportSchedule()">📋 导出</button>
+        <button class="action-btn btn-clear" onclick="clearAll()">🗑 清空</button>
+      </div>
+    </div>
+
+    <div class="calendar-wrapper">
+      <div class="calendar-nav">
+        <button class="cal-nav-btn" onclick="prevMonth()">‹ 上月</button>
+        <div class="cal-title" id="calTitle"></div>
+        <button class="cal-nav-btn" onclick="nextMonth()">下月 ›</button>
+      </div>
+      <div class="calendar-grid" id="calendarGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal-box">
+    <div class="modal-title" id="modalTitle">导出排期</div>
+    <div class="modal-content" id="modalContent"></div>
+    <button class="modal-close" onclick="document.getElementById('modal').classList.remove('show')">关闭</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const HOLIDAYS = new Set([
+  '2026-01-01','2026-01-28','2026-01-29','2026-01-30','2026-01-31',
+  '2026-02-01','2026-02-02','2026-02-03','2026-02-04',
+  '2026-04-05','2026-04-06','2026-04-07',
+  '2026-05-01','2026-05-02','2026-05-03','2026-05-04','2026-05-05',
+  '2026-06-19','2026-06-20','2026-06-21',
+  '2026-10-01','2026-10-02','2026-10-03','2026-10-04',
+  '2026-10-05','2026-10-06','2026-10-07','2026-10-08'
+]);
+
+const WORKDAY_HOLIDAYS = new Set([
+  '2026-01-25','2026-02-07','2026-04-04','2026-04-26','2026-05-09',
+  '2026-06-14','2026-09-27','2026-10-10'
+]);
+
+const HOLIDAY_NAMES = {
+  '2026-01-01': '元旦',
+  '2026-01-28': '春节', '2026-01-29': '春节', '2026-01-30': '春节', '2026-01-31': '春节',
+  '2026-02-01': '春节', '2026-02-02': '春节', '2026-02-03': '春节', '2026-02-04': '春节',
+  '2026-04-05': '清明', '2026-04-06': '清明', '2026-04-07': '清明',
+  '2026-05-01': '劳动节', '2026-05-02': '劳动节', '2026-05-03': '劳动节',
+  '2026-05-04': '劳动节', '2026-05-05': '劳动节',
+  '2026-06-19': '端午', '2026-06-20': '端午', '2026-06-21': '端午',
+  '2026-10-01': '国庆', '2026-10-02': '国庆', '2026-10-03': '国庆', '2026-10-04': '国庆',
+  '2026-10-05': '国庆', '2026-10-06': '国庆', '2026-10-07': '国庆', '2026-10-08': '国庆'
+};
+
+let requirements = [
+  {id:'big', name:'银河金刚位策略组&实验组', pd:23, pri:'BIG', note:'大需求，穿插进行', isBig:true, startDate:null},
+  {id:'r0',  name:'首页资源位货币化接入',   pd:0.5, pri:'P2', note:'0.5-1pd', isBig:false, startDate:null},
+  {id:'r1',  name:'内审节点自动抓取优化',   pd:3,   pri:'P1', note:'', isBig:false, startDate:null},
+  {id:'r2',  name:'美食频道新建中通资源位', pd:0.5, pri:'P2', note:'', isBig:false, startDate:null},
+  {id:'r3',  name:'境外金刚角标拆分+中通',  pd:2,   pri:'P1', note:'', isBig:false, startDate:null},
+  {id:'r4',  name:'货币化流程上限调整',     pd:1,   pri:'P2', note:'', isBig:false, startDate:null},
+  {id:'r5',  name:'定向预览（前端）',       pd:0.5, pri:'P2', note:'纯前端,后端0.5兜底', isBig:false, startDate:null},
+  {id:'r6',  name:'LBS维度投放',            pd:4,   pri:'P1', note:'2.5pd+1.5pd', isBig:false, startDate:null},
+  {id:'r7',  name:'战略白名单申请通道',     pd:1,   pri:'P2', note:'申请x2+银河x3', isBig:false, startDate:null},
+];
+
+let currentYear = 2026;
+let currentMonth = 5; // 0-indexed: 4 = May
+
+let dragSrcReqId = null;    // dragging from sidebar
+let dragSrcListId = null;   // dragging list item for reorder
+let dragOverListId = null;
+
+// ============================================================
+// DATE UTILS
+// ============================================================
+function pad(n) { return String(n).padStart(2, '0'); }
+function dateStr(d) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+
+function isWorkday(dateS) {
+  if (HOLIDAYS.has(dateS)) return false;
+  if (WORKDAY_HOLIDAYS.has(dateS)) return true;
+  const d = new Date(dateS + 'T00:00:00');
+  const dow = d.getDay();
+  return dow !== 0 && dow !== 6;
+}
+
+function getWorkdaysInRange(startS, endS) {
+  const result = [];
+  const cur = new Date(startS + 'T00:00:00');
+  const end = new Date(endS + 'T00:00:00');
+  while (cur <= end) {
+    const s = dateStr(cur);
+    if (isWorkday(s)) result.push(s);
+    cur.setDate(cur.getDate() + 1);
+  }
+  return result;
+}
+
+function countWorkdays(startS, endS) {
+  return getWorkdaysInRange(startS, endS).length;
+}
+
+function addWorkdays(startS, n) {
+  // Returns date after consuming n workdays starting from startS (inclusive)
+  const cur = new Date(startS + 'T00:00:00');
+  let consumed = 0;
+  let lastDate = startS;
+  while (consumed < n) {
+    const s = dateStr(cur);
+    if (isWorkday(s)) {
+      consumed++;
+      lastDate = s;
+    }
+    if (consumed < n) cur.setDate(cur.getDate() + 1);
+  }
+  return lastDate;
+}
+
+function nextWorkday(afterS) {
+  const d = new Date(afterS + 'T00:00:00');
+  d.setDate(d.getDate() + 1);
+  while (!isWorkday(dateStr(d))) d.setDate(d.getDate() + 1);
+  return dateStr(d);
+}
+
+// ============================================================
+// SCHEDULE COMPUTATION
+// Computes, for each requirement with a startDate, which dates it occupies
+// Returns: { [reqId]: [date, date, ...] }
+// ============================================================
+function computeSchedule() {
+  const schedule = {}; // reqId -> [dates]
+
+  // Gather small reqs that are scheduled
+  const smallReqs = requirements.filter(r => !r.isBig && r.startDate);
+  // Big req
+  const bigReq = requirements.find(r => r.isBig);
+
+  // For each small req, compute occupied dates
+  smallReqs.forEach(req => {
+    const dates = [];
+    const cur = new Date(req.startDate + 'T00:00:00');
+    let consumed = 0;
+    const needed = req.pd;
+    // Find workdays from startDate consuming `pd` workdays
+    while (consumed < needed) {
+      const s = dateStr(cur);
+      if (isWorkday(s)) {
+        dates.push(s);
+        consumed++;
+      }
+      cur.setDate(cur.getDate() + 1);
+    }
+    schedule[req.id] = dates;
+  });
+
+  // For big req, compute occupied dates = workdays not occupied by small reqs
+  if (bigReq && bigReq.startDate) {
+    const smallOccupied = new Set();
+    Object.values(schedule).forEach(dates => dates.forEach(d => smallOccupied.add(d)));
+
+    const dates = [];
+    const cur = new Date(bigReq.startDate + 'T00:00:00');
+    let consumed = 0;
+    const needed = bigReq.pd; // 23
+    // Look far enough ahead
+    const maxIter = 500;
+    let iter = 0;
+    while (consumed < needed && iter < maxIter) {
+      const s = dateStr(cur);
+      if (isWorkday(s) && !smallOccupied.has(s)) {
+        dates.push(s);
+        consumed++;
+      }
+      cur.setDate(cur.getDate() + 1);
+      iter++;
+    }
+    schedule[bigReq.id] = dates;
+  }
+
+  return schedule;
+}
+
+// ============================================================
+// STATS
+// ============================================================
+function updateStats() {
+  const startS = document.getElementById('startDate').value;
+  const ddlS = document.getElementById('bigDdl').value;
+
+  if (startS && ddlS) {
+    const wds = countWorkdays(startS, ddlS);
+    document.getElementById('statWorkdays').textContent = wds;
+
+    const schedule = computeSchedule();
+    const smallReqs = requirements.filter(r => !r.isBig && r.startDate);
+    let totalPd = 0;
+    smallReqs.forEach(r => { totalPd += r.pd; });
+    document.getElementById('statScheduledPd').textContent = totalPd % 1 === 0 ? totalPd : totalPd.toFixed(1);
+
+    const buffer = wds - totalPd;
+    document.getElementById('statBuffer').textContent = buffer % 1 === 0 ? buffer : buffer.toFixed(1);
+
+    const totalReqs = requirements.filter(r => !r.isBig).length;
+    const scheduledReqs = requirements.filter(r => !r.isBig && r.startDate).length;
+    document.getElementById('statReqProgress').textContent = `${scheduledReqs}/${totalReqs}`;
+  } else {
+    document.getElementById('statWorkdays').textContent = '-';
+    document.getElementById('statScheduledPd').textContent = '-';
+    document.getElementById('statBuffer').textContent = '-';
+    document.getElementById('statReqProgress').textContent = '-';
+  }
+
+  document.getElementById('reqCount').textContent = requirements.length;
+}
+
+// ============================================================
+// RENDER SIDEBAR
+// ============================================================
+function renderSidebar() {
+  const schedule = computeSchedule();
+  const list = document.getElementById('reqList');
+  list.innerHTML = '';
+
+  requirements.forEach((req, idx) => {
+    const isScheduled = req.startDate !== null;
+    const reqDates = schedule[req.id] || [];
+    const endDate = reqDates.length > 0 ? reqDates[reqDates.length - 1] : null;
+
+    const item = document.createElement('div');
+    item.className = 'req-item' + (isScheduled ? ' scheduled' : '');
+    item.dataset.id = req.id;
+    item.draggable = true;
+
+    // Drag from sidebar to calendar
+    item.addEventListener('dragstart', e => {
+      dragSrcReqId = req.id;
+      dragSrcListId = null;
+      e.dataTransfer.effectAllowed = 'copy';
+      e.dataTransfer.setData('text/plain', req.id);
+      setTimeout(() => item.classList.add('dragging'), 0);
+    });
+    item.addEventListener('dragend', () => {
+      item.classList.remove('dragging');
+      dragSrcReqId = null;
+    });
+
+    // Drag for list reorder
+    item.addEventListener('dragstart', e => {
+      dragSrcListId = req.id;
+      e.dataTransfer.setData('list-reorder', req.id);
+    });
+    item.addEventListener('dragover', e => {
+      e.preventDefault();
+      if (dragSrcListId && dragSrcListId !== req.id) {
+        dragOverListId = req.id;
+        item.classList.add('drag-over');
+      }
+    });
+    item.addEventListener('dragleave', () => {
+      item.classList.remove('drag-over');
+    });
+    item.addEventListener('drop', e => {
+      e.preventDefault();
+      item.classList.remove('drag-over');
+      if (dragSrcListId && dragSrcListId !== req.id) {
+        reorderRequirements(dragSrcListId, req.id);
+      }
+    });
+
+    const priColors = { P0: '#ef4444', P1: '#f97316', P2: '#22c55e', P3: '#9ca3af', BIG: '#8b5cf6' };
+
+    item.innerHTML = `
+      <div class="req-item-top">
+        <span class="drag-handle">⠿</span>
+        <span class="req-name" title="${req.name}" ondblclick="startEditName(this, '${req.id}')">${req.name}</span>
+        ${req.isBig ? '' : `<button class="req-delete" onclick="deleteReq('${req.id}')" title="删除">×</button>`}
+      </div>
+      <div class="req-item-bottom">
+        <span class="pri-badge pri-${req.pri}">${req.pri}</span>
+        <select class="pri-select" onchange="changePri('${req.id}', this.value)">
+          <option value="P0" ${req.pri==='P0'?'selected':''}>P0</option>
+          <option value="P1" ${req.pri==='P1'?'selected':''}>P1</option>
+          <option value="P2" ${req.pri==='P2'?'selected':''}>P2</option>
+          <option value="P3" ${req.pri==='P3'?'selected':''}>P3</option>
+          <option value="BIG" ${req.pri==='BIG'?'selected':''}>大需求</option>
+        </select>
+        <input class="pd-input" type="number" min="0.5" step="0.5" value="${req.pd}" 
+          onchange="changePd('${req.id}', this.value)" title="PD">
+        <span class="pd-label">pd</span>
+      </div>
+      ${isScheduled ? `<div class="scheduled-date">📅 ${req.startDate}${endDate && endDate !== req.startDate ? ' → '+endDate : ''}</div>` : ''}
+    `;
+
+    list.appendChild(item);
+  });
+
+  updateStats();
+}
+
+function startEditName(el, reqId) {
+  const req = requirements.find(r => r.id === reqId);
+  if (!req) return;
+  const input = document.createElement('input');
+  input.className = 'req-name-input';
+  input.value = req.name;
+  el.replaceWith(input);
+  input.focus();
+  input.select();
+  const finish = () => {
+    req.name = input.value.trim() || req.name;
+    renderAll();
+  };
+  input.addEventListener('blur', finish);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') input.blur(); });
+}
+
+function reorderRequirements(fromId, toId) {
+  const fromIdx = requirements.findIndex(r => r.id === fromId);
+  const toIdx = requirements.findIndex(r => r.id === toId);
+  if (fromIdx === -1 || toIdx === -1) return;
+  const [item] = requirements.splice(fromIdx, 1);
+  requirements.splice(toIdx, 0, item);
+  renderAll();
+}
+
+function deleteReq(id) {
+  const idx = requirements.findIndex(r => r.id === id);
+  if (idx !== -1) {
+    requirements.splice(idx, 1);
+    renderAll();
+  }
+}
+
+function changePri(id, val) {
+  const req = requirements.find(r => r.id === id);
+  if (req) {
+    req.pri = val;
+    req.isBig = (val === 'BIG');
+    renderAll();
+  }
+}
+
+function changePd(id, val) {
+  const req = requirements.find(r => r.id === id);
+  if (req) {
+    req.pd = parseFloat(val) || 1;
+    renderAll();
+  }
+}
+
+function addRequirement() {
+  const newId = 'req_' + Date.now();
+  requirements.push({
+    id: newId,
+    name: '新需求',
+    pd: 1,
+    pri: 'P2',
+    note: '',
+    isBig: false,
+    startDate: null
+  });
+  renderAll();
+  // scroll to bottom of list
+  const list = document.getElementById('reqList');
+  list.scrollTop = list.scrollHeight;
+}
+
+// ============================================================
+// RENDER CALENDAR
+// ============================================================
+function renderCalendar() {
+  const title = document.getElementById('calTitle');
+  const monthNames = ['一月','二月','三月','四月','五月','六月',
+                      '七月','八月','九月','十月','十一月','十二月'];
+  title.textContent = `${currentYear}年 ${monthNames[currentMonth]}`;
+
+  const grid = document.getElementById('calendarGrid');
+  grid.innerHTML = '';
+
+  // Header
+  const dayNames = ['日','一','二','三','四','五','六'];
+  dayNames.forEach(d => {
+    const cell = document.createElement('div');
+    cell.className = 'cal-header-cell';
+    cell.textContent = d;
+    grid.appendChild(cell);
+  });
+
+  const firstDay = new Date(currentYear, currentMonth, 1);
+  const startDow = firstDay.getDay(); // 0=Sun
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const today = dateStr(new Date());
+  const schedule = computeSchedule();
+
+  // Build date->reqs mapping
+  const dateReqMap = {}; // date -> [{req, blockType}]
+  requirements.forEach(req => {
+    const dates = schedule[req.id] || [];
+    dates.forEach(d => {
+      if (!dateReqMap[d]) dateReqMap[d] = [];
+      dateReqMap[d].push(req);
+    });
+  });
+
+  // Empty cells
+  for (let i = 0; i < startDow; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell empty';
+    grid.appendChild(cell);
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const ds = `${currentYear}-${pad(currentMonth+1)}-${pad(day)}`;
+    const isHoliday = HOLIDAYS.has(ds);
+    const isWorkdayHoliday = WORKDAY_HOLIDAYS.has(ds);
+    const d = new Date(ds + 'T00:00:00');
+    const dow = d.getDay();
+    const isWeekend = (dow === 0 || dow === 6);
+    const workday = isWorkday(ds);
+    const isToday = ds === today;
+
+    const cell = document.createElement('div');
+    let cls = 'cal-cell';
+    if (isHoliday) cls += ' holiday';
+    else if (isWorkdayHoliday) cls += ' workday-holiday';
+    else if (isWeekend) cls += ' weekend';
+    if (isToday) cls += ' today';
+
+    cell.className = cls;
+    cell.dataset.date = ds;
+
+    // Date number
+    const dateNum = document.createElement('div');
+    dateNum.className = 'cal-date-num';
+    dateNum.textContent = day;
+    cell.appendChild(dateNum);
+
+    // Holiday tag
+    if (isHoliday && HOLIDAY_NAMES[ds]) {
+      const tag = document.createElement('div');
+      tag.className = 'cal-holiday-tag';
+      tag.textContent = HOLIDAY_NAMES[ds];
+      cell.appendChild(tag);
+    } else if (isWorkdayHoliday) {
+      const tag = document.createElement('div');
+      tag.className = 'cal-workday-tag';
+      tag.textContent = '班';
+      cell.appendChild(tag);
+    }
+
+    // Req blocks
+    const reqs = dateReqMap[ds] || [];
+    reqs.forEach(req => {
+      const block = document.createElement('div');
+      block.className = `cal-req-block block-${req.pri}`;
+      block.title = req.name;
+      block.innerHTML = `${req.name}<button class="remove-btn" onclick="unscheduleReq('${req.id}')">×</button>`;
+      cell.appendChild(block);
+    });
+
+    // Drag & drop events on cell
+    if (workday) {
+      cell.addEventListener('dragover', e => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+        cell.classList.add('drag-over-valid');
+      });
+      cell.addEventListener('dragleave', () => {
+        cell.classList.remove('drag-over-valid');
+      });
+      cell.addEventListener('drop', e => {
+        e.preventDefault();
+        cell.classList.remove('drag-over-valid');
+        const reqId = dragSrcReqId || e.dataTransfer.getData('text/plain');
+        if (reqId) {
+          scheduleReq(reqId, ds);
+        }
+      });
+    } else {
+      cell.addEventListener('dragover', e => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'none';
+        cell.classList.add('drag-over-invalid');
+      });
+      cell.addEventListener('dragleave', () => {
+        cell.classList.remove('drag-over-invalid');
+      });
+      cell.addEventListener('drop', e => {
+        e.preventDefault();
+        cell.classList.remove('drag-over-invalid');
+        // reject
+      });
+    }
+
+    grid.appendChild(cell);
+  }
+}
+
+function scheduleReq(reqId, dateS) {
+  const req = requirements.find(r => r.id === reqId);
+  if (!req) return;
+  req.startDate = dateS;
+  renderAll();
+}
+
+function unscheduleReq(reqId) {
+  const req = requirements.find(r => r.id === reqId);
+  if (req) {
+    req.startDate = null;
+    renderAll();
+  }
+}
+
+// ============================================================
+// AUTO SCHEDULE
+// ============================================================
+function autoSchedule() {
+  const startS = document.getElementById('startDate').value;
+  if (!startS) { alert('请先设置开工日期'); return; }
+
+  // Reset all schedules
+  requirements.forEach(r => { r.startDate = null; });
+
+  // Small reqs in order
+  const smallReqs = requirements.filter(r => !r.isBig);
+  let cursor = startS;
+  // Make sure cursor is a workday
+  if (!isWorkday(cursor)) {
+    cursor = nextWorkday(new Date(cursor + 'T00:00:00'));
+    // Actually let's find first workday >= startS
+    const d = new Date(startS + 'T00:00:00');
+    while (!isWorkday(dateStr(d))) d.setDate(d.getDate() + 1);
+    cursor = dateStr(d);
+  }
+
+  smallReqs.forEach(req => {
+    req.startDate = cursor;
+    // Advance cursor by req.pd workdays
+    const datesConsumed = [];
+    const d = new Date(cursor + 'T00:00:00');
+    let consumed = 0;
+    while (consumed < req.pd) {
+      const s = dateStr(d);
+      if (isWorkday(s)) {
+        datesConsumed.push(s);
+        consumed++;
+      }
+      d.setDate(d.getDate() + 1);
+    }
+    // cursor = next workday after last consumed
+    while (!isWorkday(dateStr(d))) d.setDate(d.getDate() + 1);
+    cursor = dateStr(d);
+  });
+
+  // Big req starts from startS
+  const bigReq = requirements.find(r => r.isBig);
+  if (bigReq) {
+    bigReq.startDate = startS;
+  }
+
+  renderAll();
+}
+
+// ============================================================
+// EXPORT
+// ============================================================
+function exportSchedule() {
+  const startS = document.getElementById('startDate').value;
+  const ddlS = document.getElementById('bigDdl').value;
+  const devName = document.getElementById('devName').value;
+  const schedule = computeSchedule();
+
+  let text = `📅 需求排期导出\n`;
+  text += `开发者：${devName || '-'}\n`;
+  text += `开工日期：${startS || '-'}\n`;
+  text += `大需求 DDL：${ddlS || '-'}\n`;
+  text += `\n`;
+
+  requirements.forEach(req => {
+    const dates = schedule[req.id] || [];
+    const end = dates.length > 0 ? dates[dates.length - 1] : null;
+    const statusMark = req.startDate ? '✅' : '⏳';
+    text += `${statusMark} [${req.pri}] ${req.name}\n`;
+    text += `   PD: ${req.pd}`;
+    if (req.startDate) {
+      text += `  开始: ${req.startDate}`;
+      if (end && end !== req.startDate) text += `  结束: ${end}`;
+    } else {
+      text += `  （未排期）`;
+    }
+    if (req.note) text += `  备注: ${req.note}`;
+    text += `\n`;
+  });
+
+  text += `\n--- 统计 ---\n`;
+  if (startS && ddlS) {
+    const wds = countWorkdays(startS, ddlS);
+    const smallReqs = requirements.filter(r => !r.isBig && r.startDate);
+    let totalPd = 0;
+    smallReqs.forEach(r => totalPd += r.pd);
+    text += `可用工作日：${wds}\n`;
+    text += `已排小需求 PD：${totalPd}\n`;
+    text += `剩余缓冲天：${wds - totalPd}\n`;
+  }
+
+  document.getElementById('modalTitle').textContent = '📋 排期导出';
+  document.getElementById('modalContent').textContent = text;
+  document.getElementById('modal').classList.add('show');
+}
+
+function closeModal(e) {
+  if (e.target.id === 'modal') {
+    document.getElementById('modal').classList.remove('show');
+  }
+}
+
+// ============================================================
+// CLEAR
+// ============================================================
+function clearAll() {
+  if (!confirm('确认清空所有排期？')) return;
+  requirements.forEach(r => { r.startDate = null; });
+  renderAll();
+}
+
+// ============================================================
+// MONTH NAV
+// ============================================================
+function prevMonth() {
+  currentMonth--;
+  if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+  renderCalendar();
+}
+
+function nextMonth() {
+  currentMonth++;
+  if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+  renderCalendar();
+}
+
+// ============================================================
+// INIT & BINDINGS
+// ============================================================
+function renderAll() {
+  renderSidebar();
+  renderCalendar();
+}
+
+document.getElementById('startDate').addEventListener('change', renderAll);
+document.getElementById('bigDdl').addEventListener('change', renderAll);
+document.getElementById('devName').addEventListener('change', renderAll);
+
+// Helper: find first workday >= date string
+function nextWorkday(d) {
+  while (!isWorkday(dateStr(d))) d.setDate(d.getDate() + 1);
+  return dateStr(d);
+}
+
+// Initial render
+renderAll();
+</script>
+</body>
+</html>
