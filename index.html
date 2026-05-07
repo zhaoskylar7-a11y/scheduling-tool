@@ -783,24 +783,24 @@ const STORAGE_PREFIX_SCHEDULE = 'scheduling_schedule_';
 let currentUserId = 'default';
 let currentUserName = '晴姐';
 let isViewMode = false; // true when viewing a shared schedule
+const SHARE_KEY = 'scheduling_share_'; // { [shortId]: { data, updated } }
 
 // Initialize user
 function initUser() {
-  // Check URL hash for share mode
+  // Check URL hash for share mode (#s= short ID)
   const hash = window.location.hash;
-  if (hash && hash.startsWith('#share=')) {
+  if (hash && hash.startsWith('#s=')) {
     isViewMode = true;
     document.getElementById('viewOnlyBanner').classList.add('show');
-    loadSharedSchedule(hash.substring(7)); // base64 data
-    // Start auto-sync timer
+    window.__shareShortId = hash.substring(3);
+    loadSharedSchedule(hash.substring(3));
+    // Auto-sync: reload from localStorage every 5 seconds
     setInterval(() => {
-      const newHash = window.location.hash;
-      if (newHash && newHash.startsWith('#share=')) {
-        const newData = newHash.substring(7);
-        if (newData !== window.__lastShareData) {
-          window.__lastShareData = newData;
-          loadSharedSchedule(newData);
-        }
+      const shareMap = JSON.parse(localStorage.getItem(SHARE_KEY) || '{}');
+      const updated = shareMap[window.__shareShortId];
+      if (updated && (!window.__shareTs || updated.updated > window.__shareTs)) {
+        window.__shareTs = updated.updated;
+        loadSharedSchedule(window.__shareShortId);
       }
     }, 5000);
     return;
@@ -884,18 +884,24 @@ function shareSchedule() {
 }
 
 function copyShareLink() {
-  const hash = window.location.hash;
-  if (hash && hash.startsWith('#share=')) {
-    navigator.clipboard.writeText(window.location.href).then(() => {
+  if (window.__shareShortId) {
+    const url = window.location.origin + window.location.pathname + '#s=' + window.__shareShortId;
+    navigator.clipboard.writeText(url).then(() => {
       alert('链接已复制到剪贴板！');
     }).catch(() => {});
   }
 }
 
-function loadSharedSchedule(base64) {
+function loadSharedSchedule(shortId) {
+  const shareMap = JSON.parse(localStorage.getItem(SHARE_KEY) || '{}');
+  const entry = shareMap[shortId];
+  if (!entry) {
+    document.getElementById('viewOnlyBanner').textContent = '⚠️ 分享链接已失效或不存在';
+    return;
+  }
+
   try {
-    window.__lastShareData = base64;
-    const decoded = decodeURIComponent(escape(atob(base64)));
+    const decoded = decodeURIComponent(escape(atob(entry.data)));
     const data = JSON.parse(decoded);
 
     if (data.requirements) requirements = data.requirements;
@@ -907,13 +913,10 @@ function loadSharedSchedule(base64) {
 
     // Disable editing in view mode
     document.querySelectorAll('input, button, select').forEach(el => {
-      if (el.id !== 'btnUndo' && el.id !== 'btnRedo' && el.id !== 'newUserName') {
+      if (el.id !== 'btnUndo' && el.id !== 'btnRedo') {
         el.disabled = true;
       }
     });
-    document.getElementById('startDate').disabled = true;
-    document.getElementById('bigDdl').disabled = true;
-    document.getElementById('devName').disabled = true;
     document.getElementById('btnUndo').disabled = true;
     document.getElementById('btnRedo').disabled = true;
 
