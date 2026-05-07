@@ -16,9 +16,72 @@
     align-items: center;
     gap: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    justify-content: space-between;
+  }
+  header .title-block {
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
   header h1 { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; }
   header .subtitle { font-size: 12px; opacity: 0.8; }
+
+  /* User area */
+  header .user-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .user-info:hover { background: rgba(255,255,255,0.25); }
+  .user-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    color: #667eea;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .switch-user-btn {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.2s;
+  }
+  .switch-user-btn:hover { background: rgba(255,255,255,0.25); }
+  .share-btn {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .share-btn:hover { background: rgba(255,255,255,0.25); }
 
   .app-body {
     display: flex;
@@ -165,6 +228,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
+    flex-wrap: wrap;
   }
   .pri-badge {
     font-size: 10px;
@@ -199,6 +263,35 @@
   }
   .pd-input:focus { border-color: #667eea; }
   .pd-label { font-size: 10px; color: #999; }
+
+  /* Link input */
+  .req-link-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+  }
+  .req-link-input {
+    flex: 1;
+    font-size: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 2px 5px;
+    outline: none;
+    min-width: 0;
+    color: #666;
+  }
+  .req-link-input:focus { border-color: #667eea; }
+  .req-link-input.has-link { color: #667eea; }
+  .req-link-icon {
+    flex-shrink: 0;
+    cursor: pointer;
+    color: #667eea;
+    font-size: 12px;
+    display: none;
+  }
+  .req-link-icon.visible { display: block; }
+  .req-link-icon.empty { color: #ccc; cursor: default; }
 
   .scheduled-date {
     font-size: 10px;
@@ -268,7 +361,7 @@
   .action-bar {
     margin-left: auto;
     display: flex;
-    gap: 8px;
+    gap: 6px;
     align-items: center;
   }
   .action-btn {
@@ -286,6 +379,46 @@
   .btn-auto { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
   .btn-export { background: #f0f3ff; color: #667eea; border: 1px solid #c7d2fe; }
   .btn-clear { background: #fff5f5; color: #ef4444; border: 1px solid #fecaca; }
+
+  /* Undo/Redo buttons */
+  .btn-undo {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background: #fff;
+    color: #666;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s, color 0.2s;
+    line-height: 1;
+  }
+  .btn-undo:hover:not(:disabled) { background: #f0f3ff; color: #667eea; }
+  .btn-undo:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-redo {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background: #fff;
+    color: #666;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s, color 0.2s;
+    line-height: 1;
+  }
+  .btn-redo:hover:not(:disabled) { background: #f0f3ff; color: #667eea; }
+  .btn-redo:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* View-only mode indicator */
+  .view-only-banner {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 6px 16px;
+    font-size: 12px;
+    text-align: center;
+    font-weight: 600;
+    display: none;
+  }
+  .view-only-banner.show { display: block; }
 
   .calendar-wrapper {
     flex: 1;
@@ -472,23 +605,75 @@
     font-weight: 600;
   }
 
+  /* Switch user modal */
+  .modal-input {
+    margin: 12px 0;
+  }
+  .modal-input input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+  }
+  .modal-input input:focus { border-color: #667eea; }
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .modal-actions button {
+    flex: 1;
+    padding: 8px;
+    border-radius: 8px;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .modal-actions .confirm-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+  }
+  .modal-actions .cancel-btn {
+    background: #f3f4f6;
+    color: #666;
+  }
+
   @media (max-width: 700px) {
     .app-body { flex-direction: column; height: auto; overflow: auto; }
     .sidebar { width: 100%; min-width: unset; height: auto; border-right: none; border-bottom: 1px solid #e0e0e0; }
     .main-area { height: auto; }
     .action-bar { margin-left: 0; }
     .stats-bar { flex-wrap: wrap; gap: 10px; }
+    header .user-area { flex-wrap: wrap; gap: 4px; }
   }
 </style>
 </head>
 <body>
 
 <header>
-  <div>
-    <div class="h1" style="font-size:18px;font-weight:700;color:#fff;">📅 需求排期工具</div>
-    <div class="subtitle" style="font-size:12px;opacity:0.8;color:#fff;">拖拽需求到日历格子即可排期</div>
+  <div class="title-block">
+    <div>
+      <div class="h1" style="font-size:18px;font-weight:700;color:#fff;">📅 需求排期工具</div>
+      <div class="subtitle" style="font-size:12px;opacity:0.8;color:#fff;">拖拽需求到日历格子即可排期</div>
+    </div>
+  </div>
+  <div class="user-area">
+    <div class="user-info" onclick="openSwitchUserModal()">
+      <span class="user-avatar" id="userAvatar">?</span>
+      <span id="userNameDisplay">加载中...</span>
+    </div>
+    <button class="switch-user-btn" onclick="openSwitchUserModal()">切换用户</button>
+    <button class="share-btn" onclick="shareSchedule()">🔗 分享排期</button>
   </div>
 </header>
+
+<div class="view-only-banner" id="viewOnlyBanner">
+  🔍 查看模式：你正在浏览他人分享的排期，数据每5秒自动同步更新
+  <button style="margin-left:10px;padding:2px 8px;border-radius:6px;border:none;background:#667eea;color:#fff;cursor:pointer;font-size:11px;" onclick="copyShareLink()">复制链接</button>
+</div>
 
 <div class="app-body">
   <!-- SIDEBAR -->
@@ -544,6 +729,8 @@
         <div class="stat-label">已排/总需求</div>
       </div>
       <div class="action-bar">
+        <button class="btn-undo" id="btnUndo" title="撤销 (Ctrl+Z)" onclick="undo()" disabled>↶</button>
+        <button class="btn-redo" id="btnRedo" title="重做 (Ctrl+Y)" onclick="redo()" disabled>↷</button>
         <button class="action-btn btn-auto" onclick="autoSchedule()">⚡ 自动排期</button>
         <button class="action-btn btn-export" onclick="exportSchedule()">📋 导出</button>
         <button class="action-btn btn-clear" onclick="clearAll()">🗑 清空</button>
@@ -570,7 +757,319 @@
   </div>
 </div>
 
+<!-- Switch User Modal -->
+<div class="modal-overlay" id="switchUserModal" onclick="closeSwitchUserModal(event)">
+  <div class="modal-box">
+    <div class="modal-title">切换用户</div>
+    <div class="modal-content" style="white-space:pre-wrap;font-family:inherit;background:#fff;padding:0;">
+      <div class="modal-input">
+        <input type="text" id="newUserName" placeholder="输入用户名（如：晴姐）">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="cancel-btn" onclick="closeSwitchUserModal()">取消</button>
+      <button class="confirm-btn" onclick="switchUser()">确认</button>
+    </div>
+  </div>
+</div>
+
 <script>
+// ============================================================
+// USER SYSTEM
+// ============================================================
+const STORAGE_KEY_USER = 'scheduling_user';
+const STORAGE_PREFIX_SCHEDULE = 'scheduling_schedule_';
+
+let currentUserId = 'default';
+let currentUserName = '晴姐';
+let isViewMode = false; // true when viewing a shared schedule
+
+// Initialize user
+function initUser() {
+  // Check URL hash for share mode
+  const hash = window.location.hash;
+  if (hash && hash.startsWith('#share=')) {
+    isViewMode = true;
+    document.getElementById('viewOnlyBanner').classList.add('show');
+    loadSharedSchedule(hash.substring(7)); // base64 data
+    // Start auto-sync timer
+    setInterval(() => {
+      const newHash = window.location.hash;
+      if (newHash && newHash.startsWith('#share=')) {
+        const newData = newHash.substring(7);
+        if (newData !== window.__lastShareData) {
+          window.__lastShareData = newData;
+          loadSharedSchedule(newData);
+        }
+      }
+    }, 5000);
+    return;
+  }
+
+  // Load user from localStorage
+  const stored = localStorage.getItem(STORAGE_KEY_USER);
+  if (stored) {
+    try {
+      const user = JSON.parse(stored);
+      currentUserId = user.id || 'default';
+      currentUserName = user.name || '晴姐';
+    } catch(e) {}
+  }
+  updateUserDisplay();
+}
+
+function updateUserDisplay() {
+  const avatar = document.getElementById('userAvatar');
+  const nameEl = document.getElementById('userNameDisplay');
+  const initials = (currentUserName || '?').charAt(0).toUpperCase();
+  avatar.textContent = initials;
+  nameEl.textContent = currentUserName;
+}
+
+function switchUser() {
+  const input = document.getElementById('newUserName');
+  const name = input.value.trim();
+  if (!name) return;
+
+  currentUserName = name;
+  currentUserId = name.replace(/\s+/g, '_').toLowerCase() || 'default';
+  localStorage.setItem(STORAGE_KEY_USER, JSON.stringify({ id: currentUserId, name: currentUserName }));
+  updateUserDisplay();
+  closeSwitchUserModal();
+
+  // Reload schedule for new user
+  loadSchedule();
+}
+
+function openSwitchUserModal() {
+  if (isViewMode) return; // cannot switch user in view mode
+  document.getElementById('newUserName').value = currentUserName;
+  document.getElementById('newUserName').focus();
+  document.getElementById('switchUserModal').classList.add('show');
+}
+
+function closeSwitchUserModal(e) {
+  if (e && e.target.id !== 'switchUserModal') return;
+  document.getElementById('switchUserModal').classList.remove('show');
+}
+
+// ============================================================
+// SHARE SYSTEM
+// ============================================================
+function shareSchedule() {
+  if (isViewMode) return;
+
+  const data = {
+    requirements,
+    startDate: document.getElementById('startDate').value,
+    bigDdl: document.getElementById('bigDdl').value,
+    devName: document.getElementById('devName').value,
+    currentYear,
+    currentMonth
+  };
+
+  const jsonStr = JSON.stringify(data);
+  const base64 = btoa(unescape(encodeURIComponent(jsonStr)));
+  const shareUrl = window.location.origin + window.location.pathname + '#share=' + base64;
+
+  // Copy to clipboard
+  navigator.clipboard.writeText(shareUrl).then(() => {
+    alert('分享链接已复制到剪贴板！\n\n其他人打开链接即可查看排期结果。');
+  }).catch(() => {
+    // Fallback: show in modal
+    document.getElementById('modalTitle').textContent = '🔗 分享排期链接';
+    document.getElementById('modalContent').textContent = shareUrl;
+    document.getElementById('modal').classList.add('show');
+  });
+}
+
+function copyShareLink() {
+  const hash = window.location.hash;
+  if (hash && hash.startsWith('#share=')) {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      alert('链接已复制到剪贴板！');
+    }).catch(() => {});
+  }
+}
+
+function loadSharedSchedule(base64) {
+  try {
+    window.__lastShareData = base64;
+    const decoded = decodeURIComponent(escape(atob(base64)));
+    const data = JSON.parse(decoded);
+
+    if (data.requirements) requirements = data.requirements;
+    if (data.startDate) document.getElementById('startDate').value = data.startDate;
+    if (data.bigDdl) document.getElementById('bigDdl').value = data.bigDdl;
+    if (data.devName) document.getElementById('devName').value = data.devName;
+    if (data.currentYear) currentYear = data.currentYear;
+    if (data.currentMonth !== undefined) currentMonth = data.currentMonth;
+
+    // Disable editing in view mode
+    document.querySelectorAll('input, button, select').forEach(el => {
+      if (el.id !== 'btnUndo' && el.id !== 'btnRedo' && el.id !== 'newUserName') {
+        el.disabled = true;
+      }
+    });
+    document.getElementById('startDate').disabled = true;
+    document.getElementById('bigDdl').disabled = true;
+    document.getElementById('devName').disabled = true;
+    document.getElementById('btnUndo').disabled = true;
+    document.getElementById('btnRedo').disabled = true;
+
+    renderAll();
+  } catch(e) {
+    console.error('Failed to load shared schedule:', e);
+    document.getElementById('viewOnlyBanner').textContent = '⚠️ 分享链接格式错误，无法加载';
+  }
+}
+
+// ============================================================
+// UNDO / REDO SYSTEM
+// ============================================================
+const MAX_HISTORY = 50;
+let undoHistory = []; // array of snapshots
+let redoHistory = []; // array of snapshots
+let isRecording = true;
+
+function captureState(label) {
+  if (!isRecording) return;
+
+  const snapshot = {
+    label,
+    requirements: JSON.parse(JSON.stringify(requirements)),
+    startDate: document.getElementById('startDate').value,
+    bigDdl: document.getElementById('bigDdl').value,
+    devName: document.getElementById('devName').value,
+    timestamp: Date.now()
+  };
+
+  undoHistory.push(snapshot);
+  if (undoHistory.length > MAX_HISTORY) {
+    undoHistory.shift();
+  }
+  redoHistory = []; // clear redo stack on new action
+
+  updateUndoRedoButtons();
+}
+
+function undo() {
+  if (undoHistory.length === 0 || isViewMode) return;
+
+  // Push current state to redo
+  const current = {
+    requirements: JSON.parse(JSON.stringify(requirements)),
+    startDate: document.getElementById('startDate').value,
+    bigDdl: document.getElementById('bigDdl').value,
+    devName: document.getElementById('devName').value
+  };
+  redoHistory.push(current);
+
+  // Pop from undo
+  const snapshot = undoHistory.pop();
+  if (snapshot) {
+    isRecording = false;
+    requirements = JSON.parse(JSON.stringify(snapshot.requirements));
+    document.getElementById('startDate').value = snapshot.startDate;
+    document.getElementById('bigDdl').value = snapshot.bigDdl;
+    document.getElementById('devName').value = snapshot.devName;
+    isRecording = true;
+    renderAll();
+  }
+
+  updateUndoRedoButtons();
+}
+
+function redo() {
+  if (redoHistory.length === 0 || isViewMode) return;
+
+  // Push current state to undo
+  const current = {
+    requirements: JSON.parse(JSON.stringify(requirements)),
+    startDate: document.getElementById('startDate').value,
+    bigDdl: document.getElementById('bigDdl').value,
+    devName: document.getElementById('devName').value
+  };
+  undoHistory.push(current);
+
+  // Pop from redo
+  const snapshot = redoHistory.pop();
+  if (snapshot) {
+    isRecording = false;
+    requirements = JSON.parse(JSON.stringify(snapshot.requirements));
+    document.getElementById('startDate').value = snapshot.startDate;
+    document.getElementById('bigDdl').value = snapshot.bigDdl;
+    document.getElementById('devName').value = snapshot.devName;
+    isRecording = true;
+    renderAll();
+  }
+
+  updateUndoRedoButtons();
+}
+
+function updateUndoRedoButtons() {
+  document.getElementById('btnUndo').disabled = undoHistory.length === 0 || isViewMode;
+  document.getElementById('btnRedo').disabled = redoHistory.length === 0 || isViewMode;
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (isViewMode) return;
+  // Ctrl+Z
+  if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
+    e.preventDefault();
+    undo();
+  }
+  // Ctrl+Y
+  if (e.ctrlKey && e.key === 'y') {
+    e.preventDefault();
+    redo();
+  }
+});
+
+// ============================================================
+// PERSISTENCE (per-user localStorage)
+// ============================================================
+function getScheduleKey() {
+  return STORAGE_PREFIX_SCHEDULE + currentUserId;
+}
+
+function saveSchedule() {
+  if (isViewMode) return;
+  const data = {
+    requirements,
+    startDate: document.getElementById('startDate').value,
+    bigDdl: document.getElementById('bigDdl').value,
+    devName: document.getElementById('devName').value,
+    currentYear,
+    currentMonth
+  };
+  localStorage.setItem(getScheduleKey(), JSON.stringify(data));
+}
+
+function loadSchedule() {
+  const stored = localStorage.getItem(getScheduleKey());
+  if (stored) {
+    try {
+      const data = JSON.parse(stored);
+      if (data.requirements) requirements = data.requirements;
+      if (data.startDate) document.getElementById('startDate').value = data.startDate;
+      if (data.bigDdl) document.getElementById('bigDdl').value = data.bigDdl;
+      if (data.devName) document.getElementById('devName').value = data.devName;
+      if (data.currentYear) currentYear = data.currentYear;
+      if (data.currentMonth !== undefined) currentMonth = data.currentMonth;
+    } catch(e) {}
+  }
+  renderAll();
+}
+
+// Auto-save after every render
+const originalRenderAll = window.renderAll;
+window.renderAll = function() {
+  originalRenderAll();
+  saveSchedule();
+};
+
 // ============================================================
 // DATA
 // ============================================================
@@ -602,15 +1101,15 @@ const HOLIDAY_NAMES = {
 };
 
 let requirements = [
-  {id:'big', name:'银河金刚位策略组&实验组', pd:23, pri:'BIG', note:'大需求，穿插进行', isBig:true, startDate:null},
-  {id:'r0',  name:'首页资源位货币化接入',   pd:0.5, pri:'P2', note:'0.5-1pd', isBig:false, startDate:null},
-  {id:'r1',  name:'内审节点自动抓取优化',   pd:3,   pri:'P1', note:'', isBig:false, startDate:null},
-  {id:'r2',  name:'美食频道新建中通资源位', pd:0.5, pri:'P2', note:'', isBig:false, startDate:null},
-  {id:'r3',  name:'境外金刚角标拆分+中通',  pd:2,   pri:'P1', note:'', isBig:false, startDate:null},
-  {id:'r4',  name:'货币化流程上限调整',     pd:1,   pri:'P2', note:'', isBig:false, startDate:null},
-  {id:'r5',  name:'定向预览（前端）',       pd:0.5, pri:'P2', note:'纯前端,后端0.5兜底', isBig:false, startDate:null},
-  {id:'r6',  name:'LBS维度投放',            pd:4,   pri:'P1', note:'2.5pd+1.5pd', isBig:false, startDate:null},
-  {id:'r7',  name:'战略白名单申请通道',     pd:1,   pri:'P2', note:'申请x2+银河x3', isBig:false, startDate:null},
+  {id:'big', name:'银河金刚位策略组&实验组', pd:23, pri:'BIG', note:'大需求，穿插进行', isBig:true, startDate:null, link:''},
+  {id:'r0',  name:'首页资源位货币化接入',   pd:0.5, pri:'P2', note:'0.5-1pd', isBig:false, startDate:null, link:''},
+  {id:'r1',  name:'内审节点自动抓取优化',   pd:3,   pri:'P1', note:'', isBig:false, startDate:null, link:''},
+  {id:'r2',  name:'美食频道新建中通资源位', pd:0.5, pri:'P2', note:'', isBig:false, startDate:null, link:''},
+  {id:'r3',  name:'境外金刚角标拆分+中通',  pd:2,   pri:'P1', note:'', isBig:false, startDate:null, link:''},
+  {id:'r4',  name:'货币化流程上限调整',     pd:1,   pri:'P2', note:'', isBig:false, startDate:null, link:''},
+  {id:'r5',  name:'定向预览（前端）',       pd:0.5, pri:'P2', note:'纯前端,后端0.5兜底', isBig:false, startDate:null, link:''},
+  {id:'r6',  name:'LBS维度投放',            pd:4,   pri:'P1', note:'2.5pd+1.5pd', isBig:false, startDate:null, link:''},
+  {id:'r7',  name:'战略白名单申请通道',     pd:1,   pri:'P2', note:'申请x2+银河x3', isBig:false, startDate:null, link:''},
 ];
 
 let currentYear = 2026;
@@ -651,7 +1150,6 @@ function countWorkdays(startS, endS) {
 }
 
 function addWorkdays(startS, n) {
-  // Returns date after consuming n workdays starting from startS (inclusive)
   const cur = new Date(startS + 'T00:00:00');
   let consumed = 0;
   let lastDate = startS;
@@ -675,24 +1173,18 @@ function nextWorkday(afterS) {
 
 // ============================================================
 // SCHEDULE COMPUTATION
-// Computes, for each requirement with a startDate, which dates it occupies
-// Returns: { [reqId]: [date, date, ...] }
 // ============================================================
 function computeSchedule() {
-  const schedule = {}; // reqId -> [dates]
+  const schedule = {};
 
-  // Gather small reqs that are scheduled
   const smallReqs = requirements.filter(r => !r.isBig && r.startDate);
-  // Big req
   const bigReq = requirements.find(r => r.isBig);
 
-  // For each small req, compute occupied dates
   smallReqs.forEach(req => {
     const dates = [];
     const cur = new Date(req.startDate + 'T00:00:00');
     let consumed = 0;
     const needed = req.pd;
-    // Find workdays from startDate consuming `pd` workdays
     while (consumed < needed) {
       const s = dateStr(cur);
       if (isWorkday(s)) {
@@ -704,7 +1196,6 @@ function computeSchedule() {
     schedule[req.id] = dates;
   });
 
-  // For big req, compute occupied dates = workdays not occupied by small reqs
   if (bigReq && bigReq.startDate) {
     const smallOccupied = new Set();
     Object.values(schedule).forEach(dates => dates.forEach(d => smallOccupied.add(d)));
@@ -712,8 +1203,7 @@ function computeSchedule() {
     const dates = [];
     const cur = new Date(bigReq.startDate + 'T00:00:00');
     let consumed = 0;
-    const needed = bigReq.pd; // 23
-    // Look far enough ahead
+    const needed = bigReq.pd;
     const maxIter = 500;
     let iter = 0;
     while (consumed < needed && iter < maxIter) {
@@ -782,7 +1272,6 @@ function renderSidebar() {
     item.dataset.id = req.id;
     item.draggable = true;
 
-    // Drag from sidebar to calendar
     item.addEventListener('dragstart', e => {
       dragSrcReqId = req.id;
       dragSrcListId = null;
@@ -795,7 +1284,6 @@ function renderSidebar() {
       dragSrcReqId = null;
     });
 
-    // Drag for list reorder
     item.addEventListener('dragstart', e => {
       dragSrcListId = req.id;
       e.dataTransfer.setData('list-reorder', req.id);
@@ -820,6 +1308,9 @@ function renderSidebar() {
 
     const priColors = { P0: '#ef4444', P1: '#f97316', P2: '#22c55e', P3: '#9ca3af', BIG: '#8b5cf6' };
 
+    const linkValue = req.link || '';
+    const linkDisplay = linkValue ? linkValue : '添加链接';
+
     item.innerHTML = `
       <div class="req-item-top">
         <span class="drag-handle">⠿</span>
@@ -839,6 +1330,12 @@ function renderSidebar() {
           onchange="changePd('${req.id}', this.value)" title="PD">
         <span class="pd-label">pd</span>
       </div>
+      <div class="req-link-row">
+        <input class="req-link-input${linkValue ? ' has-link' : ''}" type="text" placeholder="添加链接"
+          value="${linkValue}" oninput="updateReqLink('${req.id}', this.value)" title="${linkValue}">
+        <span class="req-link-icon${linkValue ? ' visible' : ' empty'}" title="${linkValue ? '打开链接' : '添加链接'}"
+          onclick="openReqLink('${req.id}')">🔗</span>
+      </div>
       ${isScheduled ? `<div class="scheduled-date">📅 ${req.startDate}${endDate && endDate !== req.startDate ? ' → '+endDate : ''}</div>` : ''}
     `;
 
@@ -846,6 +1343,21 @@ function renderSidebar() {
   });
 
   updateStats();
+}
+
+function updateReqLink(reqId, value) {
+  const req = requirements.find(r => r.id === reqId);
+  if (req) {
+    req.link = value;
+    captureState('更新需求链接 ' + req.name);
+  }
+}
+
+function openReqLink(reqId) {
+  const req = requirements.find(r => r.id === reqId);
+  if (req && req.link) {
+    window.open(req.link, '_blank');
+  }
 }
 
 function startEditName(el, reqId) {
@@ -859,6 +1371,7 @@ function startEditName(el, reqId) {
   input.select();
   const finish = () => {
     req.name = input.value.trim() || req.name;
+    captureState('编辑需求名称 ' + req.name);
     renderAll();
   };
   input.addEventListener('blur', finish);
@@ -871,35 +1384,44 @@ function reorderRequirements(fromId, toId) {
   if (fromIdx === -1 || toIdx === -1) return;
   const [item] = requirements.splice(fromIdx, 1);
   requirements.splice(toIdx, 0, item);
+  captureState('重新排序需求');
   renderAll();
 }
 
 function deleteReq(id) {
+  if (isViewMode) return;
   const idx = requirements.findIndex(r => r.id === id);
   if (idx !== -1) {
+    const req = requirements[idx];
     requirements.splice(idx, 1);
+    captureState('删除需求 ' + req.name);
     renderAll();
   }
 }
 
 function changePri(id, val) {
+  if (isViewMode) return;
   const req = requirements.find(r => r.id === id);
   if (req) {
     req.pri = val;
     req.isBig = (val === 'BIG');
+    captureState('修改需求优先级 ' + req.name);
     renderAll();
   }
 }
 
 function changePd(id, val) {
+  if (isViewMode) return;
   const req = requirements.find(r => r.id === id);
   if (req) {
     req.pd = parseFloat(val) || 1;
+    captureState('修改需求PD ' + req.name);
     renderAll();
   }
 }
 
 function addRequirement() {
+  if (isViewMode) return;
   const newId = 'req_' + Date.now();
   requirements.push({
     id: newId,
@@ -908,10 +1430,11 @@ function addRequirement() {
     pri: 'P2',
     note: '',
     isBig: false,
-    startDate: null
+    startDate: null,
+    link: ''
   });
+  captureState('新增需求');
   renderAll();
-  // scroll to bottom of list
   const list = document.getElementById('reqList');
   list.scrollTop = list.scrollHeight;
 }
@@ -928,7 +1451,6 @@ function renderCalendar() {
   const grid = document.getElementById('calendarGrid');
   grid.innerHTML = '';
 
-  // Header
   const dayNames = ['日','一','二','三','四','五','六'];
   dayNames.forEach(d => {
     const cell = document.createElement('div');
@@ -938,13 +1460,12 @@ function renderCalendar() {
   });
 
   const firstDay = new Date(currentYear, currentMonth, 1);
-  const startDow = firstDay.getDay(); // 0=Sun
+  const startDow = firstDay.getDay();
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   const today = dateStr(new Date());
   const schedule = computeSchedule();
 
-  // Build date->reqs mapping
-  const dateReqMap = {}; // date -> [{req, blockType}]
+  const dateReqMap = {};
   requirements.forEach(req => {
     const dates = schedule[req.id] || [];
     dates.forEach(d => {
@@ -953,7 +1474,6 @@ function renderCalendar() {
     });
   });
 
-  // Empty cells
   for (let i = 0; i < startDow; i++) {
     const cell = document.createElement('div');
     cell.className = 'cal-cell empty';
@@ -980,13 +1500,11 @@ function renderCalendar() {
     cell.className = cls;
     cell.dataset.date = ds;
 
-    // Date number
     const dateNum = document.createElement('div');
     dateNum.className = 'cal-date-num';
     dateNum.textContent = day;
     cell.appendChild(dateNum);
 
-    // Holiday tag
     if (isHoliday && HOLIDAY_NAMES[ds]) {
       const tag = document.createElement('div');
       tag.className = 'cal-holiday-tag';
@@ -999,7 +1517,6 @@ function renderCalendar() {
       cell.appendChild(tag);
     }
 
-    // Req blocks
     const reqs = dateReqMap[ds] || [];
     reqs.forEach(req => {
       const block = document.createElement('div');
@@ -1009,7 +1526,6 @@ function renderCalendar() {
       cell.appendChild(block);
     });
 
-    // Drag & drop events on cell
     if (workday) {
       cell.addEventListener('dragover', e => {
         e.preventDefault();
@@ -1039,7 +1555,6 @@ function renderCalendar() {
       cell.addEventListener('drop', e => {
         e.preventDefault();
         cell.classList.remove('drag-over-invalid');
-        // reject
       });
     }
 
@@ -1048,16 +1563,21 @@ function renderCalendar() {
 }
 
 function scheduleReq(reqId, dateS) {
+  if (isViewMode) return;
   const req = requirements.find(r => r.id === reqId);
   if (!req) return;
   req.startDate = dateS;
+  captureState('排期需求 ' + req.name);
   renderAll();
 }
 
 function unscheduleReq(reqId) {
+  if (isViewMode) return;
   const req = requirements.find(r => r.id === reqId);
   if (req) {
+    const oldDate = req.startDate;
     req.startDate = null;
+    captureState('取消排期 ' + req.name);
     renderAll();
   }
 }
@@ -1066,49 +1586,41 @@ function unscheduleReq(reqId) {
 // AUTO SCHEDULE
 // ============================================================
 function autoSchedule() {
+  if (isViewMode) return;
   const startS = document.getElementById('startDate').value;
   if (!startS) { alert('请先设置开工日期'); return; }
 
-  // Reset all schedules
   requirements.forEach(r => { r.startDate = null; });
 
-  // Small reqs in order
   const smallReqs = requirements.filter(r => !r.isBig);
   let cursor = startS;
-  // Make sure cursor is a workday
-  if (!isWorkday(cursor)) {
-    cursor = nextWorkday(new Date(cursor + 'T00:00:00'));
-    // Actually let's find first workday >= startS
-    const d = new Date(startS + 'T00:00:00');
-    while (!isWorkday(dateStr(d))) d.setDate(d.getDate() + 1);
-    cursor = dateStr(d);
-  }
+  const d = new Date(startS + 'T00:00:00');
+  while (!isWorkday(dateStr(d))) d.setDate(d.getDate() + 1);
+  cursor = dateStr(d);
 
   smallReqs.forEach(req => {
     req.startDate = cursor;
-    // Advance cursor by req.pd workdays
     const datesConsumed = [];
-    const d = new Date(cursor + 'T00:00:00');
+    const d2 = new Date(cursor + 'T00:00:00');
     let consumed = 0;
     while (consumed < req.pd) {
-      const s = dateStr(d);
+      const s = dateStr(d2);
       if (isWorkday(s)) {
         datesConsumed.push(s);
         consumed++;
       }
-      d.setDate(d.getDate() + 1);
+      d2.setDate(d2.getDate() + 1);
     }
-    // cursor = next workday after last consumed
-    while (!isWorkday(dateStr(d))) d.setDate(d.getDate() + 1);
-    cursor = dateStr(d);
+    while (!isWorkday(dateStr(d2))) d2.setDate(d2.getDate() + 1);
+    cursor = dateStr(d2);
   });
 
-  // Big req starts from startS
   const bigReq = requirements.find(r => r.isBig);
   if (bigReq) {
     bigReq.startDate = startS;
   }
 
+  captureState('自动排期');
   renderAll();
 }
 
@@ -1140,6 +1652,7 @@ function exportSchedule() {
       text += `  （未排期）`;
     }
     if (req.note) text += `  备注: ${req.note}`;
+    if (req.link) text += `  链接: ${req.link}`;
     text += `\n`;
   });
 
@@ -1169,8 +1682,10 @@ function closeModal(e) {
 // CLEAR
 // ============================================================
 function clearAll() {
+  if (isViewMode) return;
   if (!confirm('确认清空所有排期？')) return;
   requirements.forEach(r => { r.startDate = null; });
+  captureState('清空排期');
   renderAll();
 }
 
@@ -1190,6 +1705,19 @@ function nextMonth() {
 }
 
 // ============================================================
+// CONFIG CHANGE HANDLERS (with undo)
+// ============================================================
+function handleConfigChange() {
+  if (isViewMode) return;
+  captureState('修改配置');
+  renderAll();
+}
+
+document.getElementById('startDate').addEventListener('change', handleConfigChange);
+document.getElementById('bigDdl').addEventListener('change', handleConfigChange);
+document.getElementById('devName').addEventListener('change', handleConfigChange);
+
+// ============================================================
 // INIT & BINDINGS
 // ============================================================
 function renderAll() {
@@ -1197,18 +1725,9 @@ function renderAll() {
   renderCalendar();
 }
 
-document.getElementById('startDate').addEventListener('change', renderAll);
-document.getElementById('bigDdl').addEventListener('change', renderAll);
-document.getElementById('devName').addEventListener('change', renderAll);
-
-// Helper: find first workday >= date string
-function nextWorkday(d) {
-  while (!isWorkday(dateStr(d))) d.setDate(d.getDate() + 1);
-  return dateStr(d);
-}
-
 // Initial render
-renderAll();
+initUser();
+loadSchedule();
 </script>
 </body>
 </html>
