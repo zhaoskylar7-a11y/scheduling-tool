@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>金刚个性化能力升级里程碑</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #fff;
+    padding: 36px 60px 60px;
+    width: 1840px;
+  }
+  h1 { font-size:22px; font-weight:700; color:#1a1a2e; margin-bottom:36px; text-align:center; }
+  .chart { position:relative; width:1680px; }
+
+  /* 旗子 */
+  .flags-area { position:relative; height:190px; }
+  .flag { position:absolute; display:flex; flex-direction:column; align-items:center; transform:translateX(-50%); z-index:5; }
+  .flag-label { font-size:11px; font-weight:600; padding:5px 13px; border-radius:16px; white-space:nowrap; color:#fff; margin-bottom:4px; }
+  .flag-bar   { width:2px; }
+  .flag-dot   { width:11px; height:11px; border-radius:50%; margin-top:4px; flex-shrink:0; }
+  .c-revenue .flag-label,.c-revenue .flag-bar,.c-revenue .flag-dot { background:#FF9800; }
+  .c-done    .flag-label,.c-done    .flag-bar,.c-done    .flag-dot { background:#5B9BD5; }
+  .legend { position:absolute; left:0; top:10px; font-size:11px; color:#888; background:#FFF8E1; border:1px solid #FFC107; border-radius:8px; padding:5px 12px; white-space:nowrap; }
+
+  /* 时间轴 */
+  .axis-row { position:relative; height:48px; }
+  .axis-bar { position:absolute; left:0; right:0; top:18px; bottom:0; background:#E8EAF0; border-radius:5px; }
+  .month-label { position:absolute; top:0; transform:translateX(-50%); font-size:15px; font-weight:700; color:#1a1a2e; z-index:3; }
+  .week-label  { position:absolute; top:28px; transform:translateX(-50%); font-size:11px; color:#888; z-index:2; }
+  .week-tick   { position:absolute; top:18px; bottom:0; width:1px; background:rgba(0,0,0,0.15); z-index:1; }
+  .month-tick  { position:absolute; top:0; bottom:0; width:2px; background:rgba(0,0,0,0.3); z-index:1; }
+
+  /* 黄色条 */
+  .bars-area { position:relative; height:240px; margin-top:16px; margin-bottom:16px; }
+  .bar-row {
+    position:absolute; height:32px; border-radius:16px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:600; padding:0 16px; white-space:nowrap;
+  }
+  .bar-p1     { background:#FFF8E1; border:2px solid #FFC107; color:#5D4037; }
+  .bar-p2     { background:#FFF0B3; border:2px solid #F9A825; color:#5D4037; }
+  .bar-orange { background:#FFF3E0; border:2px solid #FF9800; color:#6D3600; }
+  .bar-purple { background:#F3E5F5; border:2px solid #9C27B0; color:#4a0072; }
+
+  /* KR 绝对定位区域 */
+  .kr-area { position:relative; min-height:380px; }
+  .kr-col {
+    position:absolute; top:0; bottom:0;
+    border-left:1px dashed #ddd;
+    padding:0 8px 0 10px;
+  }
+  .kr-card {
+    border-radius:8px; padding:8px 12px; margin-bottom:9px;
+    font-size:12px; line-height:1.55; color:#333;
+    box-shadow:0 1px 4px rgba(0,0,0,0.07); border-left:3px solid;
+  }
+  .module-title {
+    font-size:14px; font-weight:700; margin-bottom:10px; padding:4px 0;
+    display:flex; align-items:center; gap:6px;
+  }
+  .module-title .dot { width:10px; height:10px; border-radius:50%; display:inline-block; }
+  .dot-blue { background:#2196F3; }
+  .dot-green { background:#4CAF50; }
+  .dot-orange { background:#FF9800; }
+  .dot-purple { background:#9C27B0; }
+  .dot-gray { background:#9E9E9E; }
+  .phase-title {
+    font-size:12px; font-weight:700; color:#1565C0; margin:6px 0 4px;
+    padding-left:6px; border-left:3px solid #2196F3;
+  }
+  .kr-card-title {
+    font-size:13px; font-weight:700; margin-bottom:9px;
+    border-left:4px solid; padding:6px 10px; border-radius:6px;
+  }
+  .kc-blue   { border-left-color:#2196F3; background:#F3F8FF; }
+  .kc-green  { border-left-color:#4CAF50; background:#F0FFF4; }
+  .kc-orange { border-left-color:#FF9800; background:#FFF8F0; }
+  .kc-purple { border-left-color:#9C27B0; background:#F8F0FF; }
+  .kc-gray   { border-left-color:#9E9E9E; background:#F5F5F5; }
+  .kt-blue   { color:#1565C0; background:#E3F2FD; border-left-color:#1976D2; }
+  .kt-green  { color:#2E7D32; background:#E8F5E9; border-left-color:#388E3C; }
+  .kt-orange { color:#E65100; background:#FFF3E0; border-left-color:#F57C00; }
+  .kt-purple { color:#6A1B9A; background:#F3E5F5; border-left-color:#8E24AA; }
+  .kt-gray   { color:#424242; background:#FAFAFA; border-left-color:#616161; }
+</style>
+</head>
+<body>
+<h1>🚀 金刚个性化能力升级里程碑</h1>
+
+<!--
+  坐标系：总宽=1680px  1周=96px
+  ──────────────────────────────────────────
+  M6W1= 0    M6W2= 96   M6W3=192   M6W4=288  (≈6.25)
+  M7W1=384   M7W2=480   M7W3=576   M7W4=672
+  M8W1=768   M8W2=864   M8W3=960   M8W4=1056
+  M9W1=1152  M9W2=1248  M9W3=1344  M9W4=1440
+  H2  =1640
+
+  月份中心：6月=192  7月=576  8月=960  9月=1344
+  月份分界：M7W1=384  M8W1=768  M9W1=1152
+
+  ── KR 列规划（不重叠）────────────────────
+  col-A  基座·0期+阶段1  left=0,    w=288
+  col-B  供给·阶段1      left=288,  w=240
+  col-C  基座·阶段2      left=576,  w=288
+  col-D  角标试点        left=864,  w=288
+  col-E  icon            left=1056, w=288
+  col-F  供给·阶段2      left=1248, w=288
+  col-G  主题小金刚      left=1584, w=96
+-->
+
+<div class="chart">
+
+<!-- 旗子 -->
+<div class="flags-area">
+  <div class="flag c-revenue" style="left:336px; top:0;">
+    <div class="flag-label">⭐ 6.25 模型上线AB实验</div>
+    <div class="flag-bar" style="height:120px;"></div>
+    <div class="flag-dot"></div>
+  </div>
+  <div class="flag c-revenue" style="left:432px; top:55px;">
+    <div class="flag-label">⭐ M7W1 战略坑位收敛实验上线</div>
+    <div class="flag-bar" style="height:65px;"></div>
+    <div class="flag-dot"></div>
+  </div>
+  <div class="flag c-done" style="left:624px; top:0;">
+    <div class="flag-label">M7W3 供给服务理解引擎搭建完成</div>
+    <div class="flag-bar" style="height:120px;"></div>
+    <div class="flag-dot"></div>
+  </div>
+  <div class="flag c-revenue" style="left:816px; top:55px;">
+    <div class="flag-label">⭐ M8W1 算法角标试点实验上线</div>
+    <div class="flag-bar" style="height:65px;"></div>
+    <div class="flag-dot"></div>
+  </div>
+  <div class="flag c-done" style="left:912px; top:0;">
+    <div class="flag-label">M8W2 算法角标完成</div>
+    <div class="flag-bar" style="height:120px;"></div>
+    <div class="flag-dot"></div>
+  </div>
+  <div class="flag c-revenue" style="left:1104px; top:55px;">
+    <div class="flag-label">⭐ M8W4 算法icon试点实验上线</div>
+    <div class="flag-bar" style="height:65px;"></div>
+    <div class="flag-dot"></div>
+  </div>
+  <div class="flag c-done" style="left:1488px; top:0;">
+    <div class="flag-label">M9W4 利益点理解引擎搭建完成</div>
+    <div class="flag-bar" style="height:120px;"></div>
+    <div class="flag-dot"></div>
+  </div>
+  <div class="flag c-done" style="left:1640px; top:55px;">
+    <div class="flag-label">H2 主题小金刚探索</div>
+    <div class="flag-bar" style="height:65px;"></div>
+    <div class="flag-dot"></div>
+  </div>
+  <div class="legend">⭐ = 有可量化收益的节点</div>
+</div>
+
+<!-- 时间轴 -->
+<div class="axis-row">
+  <div class="axis-bar"></div>
+  <!-- 月份分界 -->
+  <div class="month-tick" style="left:384px;"></div>
+  <div class="month-tick" style="left:768px;"></div>
+  <div class="month-tick" style="left:1152px;"></div>
+  <!-- 每周刻度（每月内部3条） -->
+  <div class="week-tick" style="left:96px;"></div>
+  <div class="week-tick" style="left:192px;"></div>
+  <div class="week-tick" style="left:288px;"></div>
+  <div class="week-tick" style="left:480px;"></div>
+  <div class="week-tick" style="left:576px;"></div>
+  <div class="week-tick" style="left:672px;"></div>
+  <div class="week-tick" style="left:864px;"></div>
+  <div class="week-tick" style="left:960px;"></div>
+  <div class="week-tick" style="left:1056px;"></div>
+  <div class="week-tick" style="left:1248px;"></div>
+  <div class="week-tick" style="left:1344px;"></div>
+  <div class="week-tick" style="left:1440px;"></div>
+  <!-- 月份标签（黑色粗体，上方） -->
+  <span class="month-label" style="left:192px;">6月</span>
+  <span class="month-label" style="left:576px;">7月</span>
+  <span class="month-label" style="left:960px;">8月</span>
+  <span class="month-label" style="left:1344px;">9月</span>
+  <!-- 周标签（灰色，轴条内部） -->
+  <span class="week-label" style="left:48px;">W1</span>
+  <span class="week-label" style="left:144px;">W2</span>
+  <span class="week-label" style="left:240px;">W3</span>
+  <span class="week-label" style="left:336px;">W4</span>
+  <span class="week-label" style="left:432px;">W1</span>
+  <span class="week-label" style="left:528px;">W2</span>
+  <span class="week-label" style="left:624px;">W3</span>
+  <span class="week-label" style="left:720px;">W4</span>
+  <span class="week-label" style="left:816px;">W1</span>
+  <span class="week-label" style="left:912px;">W2</span>
+  <span class="week-label" style="left:1008px;">W3</span>
+  <span class="week-label" style="left:1104px;">W4</span>
+  <span class="week-label" style="left:1200px;">W1</span>
+  <span class="week-label" style="left:1296px;">W2</span>
+  <span class="week-label" style="left:1392px;">W3</span>
+  <span class="week-label" style="left:1488px;">W4</span>
+</div>
+
+<!-- 黄色条 -->
+<div class="bars-area">
+  <!-- 基座0期: 0~432 (M7W1中心) -->
+  <div class="bar-row bar-p1" style="left:0; width:432px; top:4px;">基座模型·0期（M6W1~M7W1，战略坑位收敛）</div>
+  <!-- 基座阶段1: 0~336 (M6W4中心) -->
+  <div class="bar-row bar-p1" style="left:0; width:336px; top:52px;">基座模型·第一阶段（M6W1~6.25）</div>
+  <!-- 基座阶段2: 384~1104, w=720 (M8W4中心) -->
+  <div class="bar-row bar-p2" style="left:384px; width:720px; top:52px;">基座模型·第二阶段（M7W1~M8W4）</div>
+  <!-- 供给阶段1: 288~624, w=336 (M7W3中心) -->
+  <div class="bar-row bar-p1" style="left:288px; width:336px; top:100px;">供给引擎·第一阶段（6.29~M7W3）</div>
+  <!-- 供给阶段2: 1056~1488, w=432 (M9W4中心) -->
+  <div class="bar-row bar-p2" style="left:1056px; width:432px; top:100px;">供给引擎·第二阶段（M8W4~M9W4）</div>
+  <!-- 角标: 480~912, w=432 (M8W2中心) -->
+  <div class="bar-row bar-orange" style="left:480px; width:432px; top:148px;">算法角标试点（M7W2~M8W2）</div>
+  <!-- icon: 480~1104, w=624 (M8W4中心) -->
+  <div class="bar-row bar-purple" style="left:480px; width:624px; top:196px;">算法翻转icon（M7W2~M8W4）</div>
+</div>
+
+<!-- KR 卡片（绝对定位，7列不重叠） -->
+<div class="kr-area">
+
+  <!-- col-A: 基座模型建设  left=0 w=282 -->
+  <div class="kr-col" style="left:0; width:282px;">
+    <div class="module-title"><span class="dot dot-blue"></span>基座模型建设</div>
+    <div class="phase-title">0期</div>
+    <div class="kr-card kc-blue">开发支持金刚灵活实验功能</div>
+    <div class="kr-card kc-blue">战略坑位收敛实验</div>
+    <div class="phase-title">一期</div>
+    <div class="kr-card kc-blue">离线模型训练完成</div>
+    <div class="kr-card kc-blue">6.25 模型上线AB实验</div>
+    <div class="phase-title">二期</div>
+    <div class="kr-card kc-blue">引入实时特征和用户深度行为、延长样本周期</div>
+    <div class="kr-card kc-blue">用户分层分群</div>
+  </div>
+
+  <!-- col-B: 供给服务理解引擎建设  left=288 w=282 -->
+  <div class="kr-col" style="left:288px; width:282px;">
+    <div class="module-title"><span class="dot dot-green"></span>供给服务理解引擎建设</div>
+    <div class="kr-card kc-green"><strong>子品类/标签体系</strong><br><span style="font-size:11px;color:#666;">梳理各业务子品类及标签数据来源，后端接入建表；工程构建索引，算法校验数据结构</span></div>
+    <div class="kr-card kc-green"><strong>供给索引构建</strong><br><span style="font-size:11px;color:#666;">推荐工程完成供给侧索引构建，确认索引结构满足模型需求</span></div>
+  </div>
+
+  <!-- col-C: 算法角标试点  left=576 w=186 -->
+  <div class="kr-col" style="left:576px; width:186px;">
+    <div class="module-title"><span class="dot dot-orange"></span>算法角标试点</div>
+    <div class="kr-card kc-orange">算法候选集+精排</div>
+    <div class="kr-card kc-orange">AI角标生产模块</div>
+    <div class="kr-card kc-orange">C端角标展示</div>
+    <div class="kr-card kc-orange">规则沉淀闭环</div>
+  </div>
+
+  <!-- col-D: 算法翻转icon  left=768 w=186 -->
+  <div class="kr-col" style="left:768px; width:186px;">
+    <div class="module-title"><span class="dot dot-purple"></span>算法翻转icon</div>
+    <div class="kr-card kc-purple">算法主题决策</div>
+    <div class="kr-card kc-purple">icon AI生产模块</div>
+    <div class="kr-card kc-purple">icon C端上线</div>
+  </div>
+
+  <!-- col-E: 利益点理解引擎建设  left=960 w=282 -->
+  <div class="kr-col" style="left:960px; width:282px;">
+    <div class="module-title"><span class="dot dot-green"></span>利益点理解引擎建设</div>
+    <div class="kr-card kc-green"><strong>利益点数据接入</strong><br><span style="font-size:11px;color:#666;">确认营销活动利益点数据来源；若无现成数据，工具层新增利益点申报入口</span></div>
+    <div class="kr-card kc-green"><strong>利益点索引构建</strong><br><span style="font-size:11px;color:#666;">工程构建利益点索引，算法校验并将数据导入推荐内容原料池</span></div>
+  </div>
+
+  <!-- col-F: 主题小金刚  left=1296 w=200 -->
+  <div class="kr-col" style="left:1296px; width:200px;">
+    <div class="module-title"><span class="dot dot-gray"></span>主题小金刚</div>
+    <div class="kr-card kc-gray">时令/场景<br>主题探索</div>
+  </div>
+
+</div>
+</div><!-- /chart -->
+</body>
+</html>
